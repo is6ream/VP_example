@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демо Voice Password авторизации | Unibell</title>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #50ffea;
+            --secondary: #9333ea;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a2439 100%);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .logo {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 700;
+            font-size: 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .demo-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .auth-flow {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .flow-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--bg-dark);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(80, 255, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-voice {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .voice-simulation {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed var(--primary);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .voice-icon {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .call-number {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Unbounded', sans-serif;
+            margin: 15px 0;
+        }
+
+        .call-status {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin: 10px 0;
+        }
+
+        .voice-message {
+            background: rgba(80, 255, 234, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid var(--primary);
+        }
+
+        .voice-text {
+            font-size: 16px;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .voice-code {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--primary);
+            font-family: 'Unbounded', sans-serif;
+            letter-spacing: 8px;
+            margin: 15px 0;
+            text-shadow: 0 0 10px rgba(80, 255, 234, 0.3);
+        }
+
+        .timer {
+            text-align: center;
+            margin: 20px 0;
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        .recording-animation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin: 20px 0;
+            height: 40px;
+        }
+
+        .sound-bar {
+            width: 4px;
+            background: var(--primary);
+            border-radius: 2px;
+            animation: soundWave 1.5s ease-in-out infinite;
+        }
+
+        .sound-bar:nth-child(1) { height: 10px; animation-delay: 0s; }
+        .sound-bar:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+        .sound-bar:nth-child(3) { height: 30px; animation-delay: 0.2s; }
+        .sound-bar:nth-child(4) { height: 40px; animation-delay: 0.3s; }
+        .sound-bar:nth-child(5) { height: 30px; animation-delay: 0.4s; }
+        .sound-bar:nth-child(6) { height: 20px; animation-delay: 0.5s; }
+        .sound-bar:nth-child(7) { height: 10px; animation-delay: 0.6s; }
+
+        @keyframes soundWave {
+            0%, 100% { transform: scaleY(0.5); opacity: 0.7; }
+            50% { transform: scaleY(1); opacity: 1; }
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+            font-weight: 600;
+        }
+
+        .success {
+            background: rgba(80, 255, 234, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .error {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+
+        .info-panel {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .benefits-list {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .benefits-list li {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+            color: var(--text-light);
+        }
+
+        .benefits-list li:before {
+            content: "✓";
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Адаптация для планшетов */
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 95%;
+            }
+            
+            .demo-container {
+                gap: 30px;
+            }
+            
+            .auth-flow, .info-panel {
+                padding: 30px;
+            }
+            
+            .header {
+                margin-bottom: 30px;
+                padding: 15px;
+            }
+        }
+
+        /* Адаптация для мобильных устройств */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .demo-container {
+                grid-template-columns: 1fr;
+                gap: 25px;
+                margin-bottom: 30px;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+                margin-bottom: 25px;
+                padding: 10px;
+            }
+            
+            .logo {
+                font-size: 28px;
+            }
+            
+            .company-info {
+                text-align: center;
+            }
+            
+            .auth-flow, .info-panel {
+                padding: 25px 20px;
+                border-radius: 15px;
+            }
+            
+            .flow-title {
+                font-size: 22px;
+                margin-bottom: 25px;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            input {
+                padding: 12px 15px;
+                font-size: 16px;
+            }
+            
+            .btn {
+                padding: 14px 20px;
+                font-size: 16px;
+            }
+            
+            .voice-simulation {
+                padding: 25px 20px;
+                margin: 18px 0;
+            }
+            
+            .call-number {
+                font-size: 24px;
+                margin: 12px 0;
+            }
+            
+            .call-status {
+                font-size: 16px;
+                margin: 8px 0;
+            }
+            
+            .voice-code {
+                font-size: 28px;
+                letter-spacing: 6px;
+            }
+            
+            .timer {
+                font-size: 16px;
+                margin: 18px 0;
+            }
+            
+            .status-message {
+                padding: 12px;
+                margin: 18px 0;
+                font-size: 15px;
+            }
+            
+            footer {
+                padding: 25px 15px;
+                font-size: 14px;
+            }
+        }
+
+        /* Адаптация для маленьких мобильных устройств */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                margin-bottom: 20px;
+            }
+            
+            .logo {
+                font-size: 24px;
+            }
+            
+            .auth-flow, .info-panel {
+                padding: 20px 15px;
+                border-radius: 12px;
+            }
+            
+            .flow-title {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .form-group {
+                margin-bottom: 18px;
+            }
+            
+            label {
+                font-size: 15px;
+                margin-bottom: 8px;
+            }
+            
+            input {
+                padding: 12px;
+                font-size: 16px;
+            }
+            
+            .btn {
+                padding: 13px 18px;
+                font-size: 15px;
+            }
+            
+            .voice-simulation {
+                padding: 20px 15px;
+                margin: 16px 0;
+            }
+            
+            .call-number {
+                font-size: 20px;
+                margin: 10px 0;
+            }
+            
+            .call-status {
+                font-size: 15px;
+            }
+            
+            .voice-code {
+                font-size: 24px;
+                letter-spacing: 4px;
+            }
+            
+            .benefits-list li {
+                font-size: 14px;
+                margin-bottom: 12px;
+                padding-left: 22px;
+            }
+            
+            footer {
+                padding: 20px 10px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">UNIBELL</div>
+        </header>
+        
+        <div class="demo-container">
+            <div class="auth-flow">
+                <h2 class="flow-title">Тестирование Voice Password авторизации</h2>
+                
+                <!-- Шаг 1: Ввод телефона -->
+                <div class="step active" id="step1">
+                    <div class="form-group">
+                        <label for="phone">
+                            <i class="fas fa-mobile-alt"></i> Ваш номер телефона
+                        </label>
+                        <input type="text" id="phone" placeholder="Например: 79123456789" required>
+                    </div>
+                    <button class="btn btn-voice" id="initiateCallBtn">
+                        <i class="fas fa-voice-mail"></i> Получить Voice Password
+                    </button>
+                </div>
+                
+                <!-- Шаг 2: Имитация звонка -->
+                <div class="step" id="step2">
+                    <div class="voice-simulation">
+                        <div class="voice-icon">
+                            <i class="fas fa-phone-volume"></i>
+                        </div>
+                        <div class="call-status">
+                            Совершаем звонок на ваш номер...
+                        </div>
+                        <div class="call-number" id="userPhoneDisplay">+7 (900) 123-45-67</div>
+                        
+                        <div class="recording-animation">
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                            <div class="sound-bar"></div>
+                        </div>
+                        
+                        <div class="call-status" id="callStatus">
+                            Робот диктует голосовой код...
+                        </div>
+                    </div>
+                    
+                    <p class="timer" id="timer">
+                        Звонок активен: <span id="countdown">00:25</span>
+                    </p>
+                    
+                    <button class="btn btn-secondary" id="heardMessageBtn">
+                        <i class="fas fa-check-circle"></i> Я прослушал(а) сообщение
+                    </button>
+                    
+                    <button class="btn btn-secondary" id="backToPhoneBtn">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </button>
+                </div>
+                
+                <!-- Шаг 3: Ввод кода -->
+                <div class="step" id="step3">
+                    <div class="voice-simulation">
+                        <div class="voice-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="call-status">
+                            Робот продиктовал код:
+                        </div>
+                        
+                        <div class="voice-message">
+                            <div class="voice-text">
+                                "Здравствуйте! Ваш код авторизации:"
+                            </div>
+                            <div class="voice-code" id="voiceCodeDisplay">8 5 3 1</div>
+                            <div class="voice-text">
+                                "Повторяю: код авторизации - восемь, пять, три, один"
+                            </div>
+                            <div class="voice-text">
+                                "Введите этот код на сайте. Спасибо!"
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="voiceCode">
+                            <i class="fas fa-key"></i> Voice Password из сообщения
+                        </label>
+                        <input type="text" id="voiceCode" placeholder="Введите 4 цифры" maxlength="4" required>
+                    </div>
+                    
+                    <button class="btn" id="verifyCodeBtn">
+                        <i class="fas fa-check"></i> Подтвердить авторизацию
+                    </button>
+                    
+                    <button class="btn btn-secondary" id="backToCallBtn">
+                        <i class="fas fa-arrow-left"></i> Прослушать снова
+                    </button>
+                </div>
+                
+                <!-- Шаг 4: Успех -->
+                <div class="step" id="step4">
+                    <div class="status-message success" id="successMessage">
+                        <i class="fas fa-check-circle"></i> Авторизация успешна! Voice Password подтвержден.
+                    </div>
+                    <button class="btn" id="restartBtn">
+                        <i class="fas fa-redo"></i> Начать заново
+                    </button>
+                </div>
+                
+                <!-- Сообщение об ошибке -->
+                <div class="status-message error" id="errorMessage">
+                    <i class="fas fa-exclamation-circle"></i> Неверный код. Попробуйте еще раз.
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <h2 style="color: var(--primary); margin-bottom: 30px; text-align: center;">Преимущества Voice Password</h2>
+                
+                <ul class="benefits-list">
+                    <li>Голосовая передача кода - максимальная безопасность</li>
+                    <li>Идеально для людей с нарушениями зрения</li>
+                    <li>Работает на любых телефонах, даже кнопочных</li>
+                    <li>Не требует доступа к интернету</li>
+                    <li>Защита от перехвата SMS сообщений</li>
+                    <li>Высокий уровень доверия пользователей</li>
+                </ul>
+                
+                <div style="background: rgba(80, 255, 234, 0.1); padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid var(--primary);">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">Как работает демо:</h3>
+                    <ol style="color: var(--text-light); padding-left: 20px;">
+                        <li style="margin-bottom: 8px;">Введите любой номер телефона</li>
+                        <li style="margin-bottom: 8px;">Нажмите "Получить Voice Password"</li>
+                        <li style="margin-bottom: 8px;">Система совершит звонок и продиктует код</li>
+                        <li style="margin-bottom: 8px;">Введите услышанный 4-значный код</li>
+                        <li>Наслаждайтесь безопасной авторизацией!</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Демонстрация сервиса Voice Password авторизации Unibell &copy; 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+            const step4 = document.getElementById('step4');
+            const phoneInput = document.getElementById('phone');
+            const voiceCodeInput = document.getElementById('voiceCode');
+            const initiateCallBtn = document.getElementById('initiateCallBtn');
+            const heardMessageBtn = document.getElementById('heardMessageBtn');
+            const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+            const backToPhoneBtn = document.getElementById('backToPhoneBtn');
+            const backToCallBtn = document.getElementById('backToCallBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            const userPhoneDisplay = document.getElementById('userPhoneDisplay');
+            const voiceCodeDisplay = document.getElementById('voiceCodeDisplay');
+            const countdownDisplay = document.getElementById('countdown');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const callStatus = document.getElementById('callStatus');
+            
+            let generatedVoiceCode = '';
+            let countdownInterval;
+            let timeLeft = 25;
+            
+            // Слова для преобразования цифр в слова
+            const numberWords = {
+                '0': 'ноль', '1': 'один', '2': 'два', '3': 'три', '4': 'четыре',
+                '5': 'пять', '6': 'шесть', '7': 'семь', '8': 'восемь', '9': 'девять'
+            };
+
+            initiateCallBtn.addEventListener('click', function() {
+                const phone = phoneInput.value.trim();
+                
+                if (!phone || phone.length < 5) {
+                    alert('Пожалуйста, введите номер телефона');
+                    return;
+                }
+                
+                userPhoneDisplay.textContent = formatPhoneNumber(phone);
+                generatedVoiceCode = generateVoiceCode();
+                
+                step1.classList.remove('active');
+                step2.classList.add('active');
+                errorMessage.style.display = 'none';
+                
+                startCountdown();
+                
+                setTimeout(() => {
+                    callStatus.textContent = 'Сообщение продиктовано! Нажмите "Я прослушал(а)"';
+                    callStatus.style.color = 'var(--primary)';
+                    
+                    // Обновляем отображение кода с правильными словами
+                    const codeDigits = generatedVoiceCode.split('');
+                    const codeWords = codeDigits.map(digit => numberWords[digit]).join(', ');
+                    voiceCodeDisplay.textContent = generatedVoiceCode.split('').join(' ');
+                    
+                    // Обновляем текст в голосовом сообщении
+                    const voiceMessage = document.querySelector('.voice-message');
+                    if (voiceMessage) {
+                        voiceMessage.innerHTML = `
+                            <div class="voice-text">
+                                "Здравствуйте! Ваш код авторизации:"
+                            </div>
+                            <div class="voice-code">${generatedVoiceCode.split('').join(' ')}</div>
+                            <div class="voice-text">
+                                "Повторяю: код авторизации - ${codeWords}"
+                            </div>
+                            <div class="voice-text">
+                                "Введите этот код на сайте. Спасибо!"
+                            </div>
+                        `;
+                    }
+                }, 3000);
+            });
+            
+            heardMessageBtn.addEventListener('click', function() {
+                step2.classList.remove('active');
+                step3.classList.add('active');
+                voiceCodeInput.focus();
+            });
+            
+            verifyCodeBtn.addEventListener('click', function() {
+                const enteredCode = voiceCodeInput.value.trim();
+                
+                if (enteredCode === generatedVoiceCode) {
+                    step3.classList.remove('active');
+                    step4.classList.add('active');
+                    successMessage.style.display = 'block';
+                    clearInterval(countdownInterval);
+                } else {
+                    errorMessage.style.display = 'block';
+                    voiceCodeInput.value = '';
+                    voiceCodeInput.focus();
+                }
+            });
+            
+            backToPhoneBtn.addEventListener('click', function() {
+                step2.classList.remove('active');
+                step1.classList.add('active');
+                clearInterval(countdownInterval);
+                callStatus.textContent = 'Робот диктует голосовой код...';
+                callStatus.style.color = 'var(--text-muted)';
+            });
+            
+            backToCallBtn.addEventListener('click', function() {
+                step3.classList.remove('active');
+                step2.classList.add('active');
+                startCountdown();
+            });
+            
+            restartBtn.addEventListener('click', function() {
+                step4.classList.remove('active');
+                step1.classList.add('active');
+                phoneInput.value = '';
+                voiceCodeInput.value = '';
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                timeLeft = 25;
+                countdownDisplay.textContent = '00:25';
+                callStatus.textContent = 'Робот диктует голосовой код...';
+                callStatus.style.color = 'var(--text-muted)';
+            });
+            
+            function startCountdown() {
+                clearInterval(countdownInterval);
+                timeLeft = 25;
+                
+                countdownInterval = setInterval(function() {
+                    timeLeft--;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        countdownDisplay.textContent = '00:00';
+                        errorMessage.textContent = 'Время звонка истекло. Запросите новый Voice Password.';
+                        errorMessage.style.display = 'block';
+                    } else {
+                        const seconds = timeLeft;
+                        countdownDisplay.textContent = `00:${seconds.toString().padStart(2, '0')}`;
+                    }
+                }, 1000);
+            }
+            
+            function generateVoiceCode() {
+                return Math.floor(1000 + Math.random() * 9000).toString();
+            }
+            
+            function formatPhoneNumber(phone) {
+                let cleaned = phone.replace(/\D/g, '');
+                if (cleaned.startsWith('7') || cleaned.startsWith('8')) {
+                    cleaned = '7' + cleaned.substring(1);
+                }
+                
+                if (cleaned.length >= 11) {
+                    return '+7 (' + cleaned.substring(1, 4) + ') ' + cleaned.substring(4, 7) + '-' + cleaned.substring(7, 9) + '-' + cleaned.substring(9, 11);
+                }
+                return '+7 (' + cleaned.substring(1, 4) + ') ' + cleaned.substring(4);
+            }
+            
+            voiceCodeInput.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '').substring(0, 4);
+                
+                if (this.value.length === 4) {
+                    verifyCodeBtn.click();
+                }
+            });
+            
+            phoneInput.focus();
+        });
+    </script>
+</body>
+</html>
